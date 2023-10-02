@@ -1,0 +1,7 @@
+environment: uat
+
+custom_message: Feature-X1
+
+image:
+  repository: vkancherla/my-python-app
+  tag: "latest"

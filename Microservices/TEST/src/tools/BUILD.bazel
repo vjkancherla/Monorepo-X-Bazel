@@ -1,0 +1,6 @@
+
+py_library(
+    name = "test_py_tools_library",
+    srcs =  glob(["*.py"]),
+    visibility = ["//visibility:public"]
+)

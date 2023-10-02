@@ -1,0 +1,12 @@
+Flask==2.0.2
+Werkzeug==2.0.0
+Jinga=1.2
+Click==8.0.0
+Itsdangerous==2.0.0
+Jinja2==3.0.0
+Markupsafe==2.0.0
+Requests==2.26.0
+Idna==3.3
+Urllib3==1.26.12
+Certifi==2022.12.7
+Charset_normalizer==3.0.1

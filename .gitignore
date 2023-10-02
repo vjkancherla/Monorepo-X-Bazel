@@ -1,0 +1,21 @@
+# Bazel build output
+/bazel-bin/
+/bazel-out/
+/bazel-testlogs/
+
+# Python-specific
+/__pycache__/
+
+# IDE-specific files (e.g., for Visual Studio Code, PyCharm, etc.)
+/.vscode/
+/.idea/
+
+# Dependency lock files (e.g., for Python's pipenv or poetry)
+Pipfile.lock
+poetry.lock
+
+# Miscellaneous temporary files or directories
+*.pyc
+*.pyo
+*.pyz
+.DS_Store

@@ -1,0 +1,11 @@
+py_library(
+    name = "the_pythonapp_library",
+    srcs = glob(["*.py"]),
+    visibility = ["//visibility:public"]
+)
+
+py_binary(
+    name = "the_pythonapp_binary",
+    srcs = ["app.py"],
+    main = "app.py",
+)

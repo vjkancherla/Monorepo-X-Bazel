@@ -1,0 +1,11 @@
+load("@pip//:requirements.bzl", "requirement")
+
+py_test(
+    name = "the_pythonapp_test",
+    srcs =  glob(["*.py"]),
+    main = "test_app.py",
+    deps = [
+        requirement("Requests"),
+        "//Microservices/PythonApp/src/app:the_pythonapp_library",
+    ],
+)

@@ -1,0 +1,78 @@
+
+============================
+Shared Libraries Location
+============================
+
+MonoRepo-X/Core-Services/Jenkins/JenkinsSharedLibrary
+├── resources
+│   └── lint.sh
+└── vars
+    ├── continuousIntegrationMain.groovy
+    └── continuousIntegrationPR.groovy
+
+"src" directory
+    - contains the static classes where it can be used as a helper class for other pipelines. 
+      Generally it contains a very common data which can be used across pipelines.
+
+"vars" directory
+    - this directory hosts script files that are exposed as a variable in Pipelines.
+    - The name of the file is the name of the variable in the Pipeline
+
+"resources" directory
+    - If your shared library needs additional resources such as configuration files, templates, 
+      or any non-Groovy assets, you can place them in the resources directory.
+
+
+====================================
+Shared Libraries Setup in Console
+====================================
+
+Jenkins-Console >> Manage Jenkins >> System
+
+Configure a new library under "Global Pipeline Libraries" as follows:
+Name : my-shared-library
+Default Version: <Name of the branch> ("main" or "New-CI-WorkFlow" (name of the branch you are working on) )
+Select:
+    - Allow default version to be overridden
+    - include @Library changes in job recent changes
+Retrieval method:
+    - Modern SCM
+        - Git
+        - Project Repo: https://github.com/vjkancherla/Monorepo-X
+    - Behaviors
+        - Discover branches
+Library Path: Core-Services/Jenkins/JenkinsSharedLibrary/
+
+
+===================================
+Shared Library and GitHub Branch
+====================================
+
+The best practise is to, once we have stable shared library code base
+1. create a new branch off of main. Name the branch: jenkins-shared-libraries-20230923
+
+2. Re-run the previous section - "Shared Libraries Setup in Console" - and use "jenkins-shared-libraries-20230923" for "Default Version"
+    
+-----
+
+If you need to update shared library code base, follow these steps:
+1. Create a feature branch
+2. Make chages to shared library code base.
+3. To test the changes, 
+    - Run the previous section - "Shared Libraries Setup in Console" - and crate a new shared library
+    - use "<feature-branch-name>" for "Default Version"
+    - update JenkinsFile.CI to use the new/temp shared library
+
+Once testing is completed and changes have been integrated with Main branch:
+1. create a new branch off of main. Name the branch: jenkins-shared-libraries-<today's date>
+2. Re-run the previous section - "Shared Libraries Setup in Console" - and use "jenkins-shared-libraries-<today's date>" for "Default Version"
+
+=========================
+Invoking Shared Library
+==========================
+
+In JenkinsFile.CI, add @Library(['my-shared-library']) as the fist line
+
+Invoke a Shared Library by writing 
+    - continuousIntegrationMain()
+    - continuousIntegrationPR()

@@ -1,0 +1,89 @@
+We will install and run Jenkins on docker. Jenkins will connect and deploy to K8s (K3D) cluster that is also running on docker.
+==========
+
+[1] To enable jenkins to connect to K3D K8s, we need to have Jenkins and K3D running on the same docker network.
+Identify the docker network that K3D is using:
+
+>> docker network ls
+NETWORK ID     NAME            DRIVER    SCOPE
+181721b94a9b   bridge          bridge    local
+c8bfd9080658   host            host      local
+99665df16276   k3d-mycluster   bridge    local <----
+c59bf9091489   none            null      local
+
+
+[2.0] Since you are running Jenkins in a Docker container on your MacBook and haven't configured Jenkins to specifically
+use Docker agents or agents on some other machine, by default the Jenkins jobs will run on the master agent itself.
+This master agent is essentially the Jenkins server, in your case, the Docker container where Jenkins is running.
+You need to crate a Docker image based on the Jenkins Docker image you are using.
+You can create a Dockerfile, where you start from the Jenkins image and add the installation steps of kubectl and helm.
+
+>> docker build -t vjkancherla/my-jenkins:v1 -f ./Jenkins-Dockerfile
+>> docker push docker.io/vjkancherla/my-jenkins:v1
+
+
+[2.1] Install and Run Jenkins, use the network identified above:
+
+Note that we are mounting a host directory to the container so that changes are persisted.
+Note that we are also mounting the MacBooks Docker socket. This is because, its hard to run docker within a docker container.
+
+>> docker run --name jenkins-docker \
+-p 8080:8080 -p 50000:50000 \
+-v /Users/vkancherla/Downloads/jenkins-volume:/var/jenkins_home \
+-v /var/run/docker.sock:/var/run/docker.sock \
+--network=k3d-mycluster \
+vjkancherla/my-jenkins:v1
+
+
+
+[2.2] Stop/Start Jenkins
+>> docker stop jenkins-docker
+>> docker rm jenkins-docker
+>> docker run --name jenkins-docker \
+-p 8080:8080 -p 50000:50000 \
+-v /Users/vkancherla/Downloads/jenkins-volume:/var/jenkins_home \
+-v /var/run/docker.sock:/var/run/docker.sock \
+--network=k3d-mycluster \
+vjkancherla/my-jenkins:v1
+
+
+[3] Login to Jenkins console: https://localhost:8080, and finish setup.
+
+Note: create a admin/admin user credential
+
+[4] Install the Kubernetes plugin in Jenkins
+
+
+[5] To connect Jenkins to K3D, we will need the kubeconfig file that K3D generates for us. However, we will need to update it a bit.
+
+Option-1
+On the MacBook,
+>> cp ~/.kube/config ~/Documents/Clients/my_ci_cd/k3d-kubeconfig
+
+>> docker ps | grep k3d-mycluster-server-0
+
+>> docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' k3d-mycluster-server-0
+172.19.0.3
+
+Update ~/Documents/Clients/my_ci_cd/k3d-config and set K3D API-Server URL as :
+
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJlRENDQVIyZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQWpNU0V3SHdZRFZRUUREQmhyTTNNdGMyVnkKZG1WeUxXTmhRREUyT1RBeU9EUTFPVEl3SGhjTk1qTXdOekkxTVRFeU9UVXlXaGNOTXpNd056SXlNVEV5T1RVeQpXakFqTVNFd0h3WURWUVFEREJock0zTXRjMlZ5ZG1WeUxXTmhRREUyT1RBeU9EUTFPVEl3V1RBVEJnY3Foa2pPClBRSUJCZ2dxaGtqT1BRTUJCd05DQUFTK2NmaVgzb05kL1hZaVova0lMOTBpTjMreUh2cUV0NjlHNU42ZjdFMWUKQTIxekpnVnE1M2dtRmtNdTQ4WWordDNPMlVDQnFoK1c4MU9rdTFKSEFBUmRvMEl3UURBT0JnTlZIUThCQWY4RQpCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVUU1KzhkOVBBYkxtRndYbkdOMDdJCldIcnNDQmt3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loQU5vOWNHMkowbGljNlJBdnVxbEFEcUVVYkNVd2pady8KYzVHRWI5d0xjc2tSQWlFQXVNZ1hSM0ZjZ05LWW84bzVJdEFpbVgzdll4WlNRU3g2Nnh3ck9pcjVIRnc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    server: https://172.19.0.3:6443 <=====
+  name: k3d-mycluster
+
+Option-2
+cp ~/.kube/config k3d-kubeconfig
+k3d_mycluster_server_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' k3d-mycluster-server-0)
+sed -i '' "s|server: .*|server: https://$k3d_mycluster_server_ip:6443|g" k3d-kubeconfig
+
+
+[6] In Jenkins, create a new Credential, of type "secret file", called "k3d-config", and use ~/Documents/Clients/my_ci_cd/k3d-kubeconfig
+
+[7] Configure Kubernetes Cloud using the kubeconfig file
+
+a. Go to "Manage Jenkins" -> "Configure System."
+b. Scroll down to the "Cloud" section, and click on the "Add a new cloud" dropdown.
+c. Select "Kubernetes" from the dropdown.
+d. Credentials: use the credential created in step-6
+e. Click Test-Connect to ensure that the connectivity works

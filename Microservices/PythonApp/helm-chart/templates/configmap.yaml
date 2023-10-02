@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-environment-vars
+  namespace: {{.Values.environment}}
+data:
+  ENVIRONMENT: {{.Values.environment}}
+  IMAGE_VERSION: "{{.Values.image.repository}}:{{.Values.image.tag}}"
+  MESSAGE: {{.Values.custom_message}}

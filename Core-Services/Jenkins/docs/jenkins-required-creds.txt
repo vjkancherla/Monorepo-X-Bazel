@@ -1,0 +1,6 @@
+The Full List of Credentials to Create:
+
+1. id: kube-config, type: secret-file
+2. id: sonarqube-token, type: secret-text
+3. id: dockerhub-creds, type: username/pwd
+4. id: github-creds, type: username/pwd

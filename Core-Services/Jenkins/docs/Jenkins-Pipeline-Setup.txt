@@ -1,0 +1,37 @@
+
+=====================
+PipeLine for PR CI
+======================
+1. Create a  multibranch Pipeline with the following config
+Name: Monorepo-X-PR-CI
+Display Name: Leave empty
+Branch Sources:
+  - GitHub
+  - Repository HTTPS URL: https://github.com/vjkancherla/Monorepo-X
+Behaviours:
+  - Discover pull requests from origin
+      - The current pull request revision
+  - Filter by name (with regular expression)
+      - Regular expression: ^PR-\d+$  (Only PR's such as - PR-10, PR-222, etc)
+Build Configuration:
+  - Mode: by Jenkinsfile
+  - Script Path: JenkinsFile.CI
+
+====================================
+PipeLine for PR-Merge-into-Main CI
+=====================================
+1. Create a  multibranch Pipeline with the following config
+Name: Monorepo-X-Main-CI
+Display Name: Leave empty
+Branch Sources:
+  - GitHub
+  - Repository HTTPS URL: https://github.com/vjkancherla/Monorepo-X
+Behaviours:
+  - Discover branches
+      - Exclude branches that are also filed as PRs
+  - Filter by name (with regular expression)
+      - Regular expression: main  (Only the MAIn branch)
+Build Configuration:
+  - Mode: by Jenkinsfile
+  - Script Path: JenkinsFile.CI
+

@@ -1,0 +1,8 @@
+py_test(
+    name = "test_py",
+    srcs =  glob(["*.py"]),
+    main = "Calculator_test.py",
+    deps = [
+        "//Microservices/TEST/src/tools:test_py_tools_library",
+    ],
+)

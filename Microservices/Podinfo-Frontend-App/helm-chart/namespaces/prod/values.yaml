@@ -1,0 +1,30 @@
+environment: prod
+
+replicaCount: 1
+backend: #http://backend-podinfo-dev:9898/echo
+backends: []
+
+# metrics-server add-on required
+hpa:
+  enabled: false
+
+# Redis deployment
+redis:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: podinfo-frontend-{{ .Values.environment }}-127-0-0-1.nip.io
+      paths:
+        - path: /
+          pathType: Prefix

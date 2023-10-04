@@ -145,10 +145,12 @@ Repository '@com_github_grpc_grpc' is not defined. and referenced by '@com_githu
 
 It means a dependency with the name "com_github_grpc_grpc" is missing.
 
+Goole search for com_github_grpc_grpc should give u the git repo: github.com/grpc/grpc
+
 Add the following to deps.bzl
 ====
 go_repository(
-        name = "com_github_grpc_grpc",
+        name = "com_github_grpc_grpc", <--- this should match the string in "Repository '@com_github_grpc_grpc' is not defined"
         importpath = "github.com/grpc/grpc",
         sum = "h1:ERzVAJ0NoRduGwvmgxBBHbt7GdowD3m0WrpvPUnx/pM=",
         version = "v1.59.0",
@@ -164,7 +166,7 @@ The repository '@go_googleapis' could not be resolved:
 Repository '@go_googleapis' is not defined and referenced by '@com_github_grpc_ecosystem_grpc_gateway_v2//runtime:runtime'
 ======
 
-It means a dependency with name "go_googleapis" is missing.
+It means a dependency TARGET with name "go_googleapis" is missing.
 
 Add the following to WORKSPACE.bazel
 ====
@@ -174,3 +176,40 @@ http_archive(
     strip_prefix = "googleapis-4d27ae79c480f0de8e88aae02c53ee7fb9fc03f5",
 )
 ====
+
+
+
+[8] If you see an error like this:
+=====
+ERROR: /private/var/tmp/_bazel_vijaykancherla/f970908e5d6b57a7ae94c7cac5cec9b4/external/com_github_grpc_ecosystem_grpc_gateway_v2/runtime/BUILD.bazel:5:11: 
+no such package '@org_golang_google_genproto_googleapis_api//httpbody': 
+The repository '@org_golang_google_genproto_googleapis_api' could not be resolved: 
+Repository '@org_golang_google_genproto_googleapis_api' is not defined and 
+referenced by '@com_github_grpc_ecosystem_grpc_gateway_v2//runtime:runtime'
+=====
+
+and a google search does not give me the name of the github repo for org_golang_google_genproto_googleapis_api, to get the dependency from, do this:
+    - go to the repo the source, thats referencing the dependency 
+    - in this case the source is - '@com_github_grpc_ecosystem_grpc_gateway_v2//runtime:runtime'
+    - identify the repo for @com_github_grpc_ecosystem_grpc_gateway_v2 in deps.bzl
+        ===
+        go_repository(
+            name = "com_github_grpc_ecosystem_grpc_gateway_v2",
+            importpath = "github.com/grpc-ecosystem/grpc-gateway/v2",
+            sum = "h1:RtRsiaGvWxcwd8y3BiRZxsylPT8hLWZ5SPcfI+3IDNk=",
+            version = "v2.18.0",
+        )
+        ===
+    - go to github.com/grpc-ecosystem/grpc-gateway in browser
+    - search for "org_golang_google_genproto_googleapis_api"
+    - you should see a file similar to dep.bzl or repositoris.bzl
+        - you found the following entry in repositoris.bzl
+            ===
+            go_repository(
+                name = "org_golang_google_genproto_googleapis_api",
+                importpath = "google.golang.org/genproto/googleapis/api",
+                sum = "h1:W18sezcAYs+3tDZX4F80yctqa12jcP1PUS2gQu1zTPU=",
+                version = "v0.0.0-20231002182017-d307bd883b97",
+            )
+            -===
+    - copy the above code and paste it in our deps.bzl

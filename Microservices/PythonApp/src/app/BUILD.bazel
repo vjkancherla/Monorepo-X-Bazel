@@ -1,7 +1,7 @@
 py_library(
     name = "the_pythonapp_library",
     srcs = glob(["*.py"]),
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
 )
 
 py_binary(

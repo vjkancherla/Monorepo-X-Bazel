@@ -1,0 +1,23 @@
+================
+BAZEL COMMANDS
+=================
+>> bazel query "..."
+//Microservices/PythonApp/src/app:the_pythonapp_binary
+//Microservices/PythonApp/src/app:the_pythonapp_library
+//Microservices/PythonApp/src/tests:the_pythonapp_test
+//Microservices/TEST/src/tests:test_py
+//Microservices/TEST/src/tools:test_py_tools_library
+//Microservices/TEST/src/web:test_py_web_binary
+//Microservices/TEST/src/web:test_py_web_library
+
+
+>> bazel run /Microservices/PythonApp/src/app:the_pythonapp_binary
+    in another window, run >> curl http://localhost:8888
+
+
+>> bazel run //Microservices/PythonApp/src/tests:the_pythonapp_test
+
+
+>> bazel run //Microservices/TEST/src/web:test_py_web_binary
+    in another window, run >> curl http://localhost:5000
+

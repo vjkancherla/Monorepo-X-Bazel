@@ -1,0 +1,176 @@
+==================
+BAZEL NOTES
+==================
+
+[1]. Do not create a BUILD.bazel file at the root of or a level above the src folder. If you have to, leave it empty
+
+<<<<
+
+[2]. Create a BUILD.bazel file within EACH source folder, marking them of a separate package. 
+For Eg, create a BUILD.bazel with the following folders:
+===
+tree                                                                                                           19:47
+.
+├── BUILD.bazel <---- EMPTY file
+└── src
+    ├── tests
+    │   ├── BUILD.bazel
+    │   └── Calculator_test.py
+    ├── tools
+    │   ├── BUILD.bazel
+    │   └── Calculator.py
+    └── web
+        ├── BUILD.bazel
+        └── Web.py
+===
+
+<<<<
+
+[3]. In the above example, we have
+- tools folder: resources in this folder do not depend on any other resources
+- web folder: resources in this folder depends on the resources on tools folder, and on external packages (Flask)
+- tests folder: resources in this folder depends on the resources in web folder.
+
+- tools folder:
+    - create a library of all the resources in the package using py_library rule.
+
+- web folder:
+    - create a library of all the resources in the package using py_library rule
+        - define the dependencies:
+            1. use the bazel library created in tools folder
+            2. use the "pip"'s "requirement" function to load the external packages (Flask)
+                - note that all the external packages are defined in bazel/python/thirdparty/requirements.txt
+
+    - create an executable binary using the py_binary rule
+        - define the dependencies:
+            1. use the bazel library created, above
+
+- Tests folder:
+    - create a executable test library using py_test rule
+    - define the dependencies:
+        1. use the bazel library created in web folder
+        2. Note that you don't need to add the bazel library created in tools folder, as its already part of web folder's bazel library
+
+    - Pay attention to the Python import in Calculator_test.py - "from Microservices.TEST.src.tools.Calculator import Calculator"
+        - the import statement using bazel path to identify the full path to the class to import
+
+<<<<
+
+[4]. When you see error messages like this :
+
+====
+ERROR: /private/var/tmp/_bazel_vijaykancherla/f970908e5d6b57a7ae94c7cac5cec9b4/external/pip_flask/BUILD.bazel:22:11: 
+no such package '@pip_jinja2//': The repository '@pip_jinja2' could not be resolved: Repository '@pip_jinja2' is not defined and referenced by '@pip_flask//:pkg'
+ERROR: Analysis of target '//Microservices/TEST:test_py_library' failed; build aborted:
+====
+
+it means that one of the packages that we have already imported (Flask) has a dependency (Jinja2) which has not been imported/installed.
+
+To resolve the issue, update bazel/python/thirdparty/requirements.txt and add an entry for the missing dependency (Jinja2)
+
+<<<<
+
+
+[5] GENERATING BUILD.bazel FILES AUTOMATICALLY FOR A GO REPO USING GAZELLE
+    - Gazelle is a Bazel build file generator for Bazel projects
+
+    - Follow the instructions for "Running Gazelle with Bazel" to set it up
+        - https://github.com/bazelbuild/bazel-gazelle#id11
+
+    - Add a BUILD.bazel next to the go.mod file (in whichever directory it exists), with the following contect:
+        ====
+        load("@bazel_gazelle//:def.bzl", "gazelle")
+
+        # gazelle:prefix github.com/stefanprodan/podinfo
+        gazelle(name = "gazelle")
+        =====
+
+        The "# gazelle:prefix github.com/stefanprodan/podinfo" is important.
+        The prefix specification refers to the Go import path used across the project. 
+        For example, the Microservices/PodinfoFrontendApp/src/cmd/podinfo/main.go has the following imports:
+        ==
+        import (
+            "github.com/stefanprodan/podinfo/pkg/api"
+            "github.com/stefanprodan/podinfo/pkg/grpc"
+            "github.com/stefanprodan/podinfo/pkg/signals"
+            "github.com/stefanprodan/podinfo/pkg/version"
+             go_grpc "google.golang.org/grpc"
+        )
+        
+        ==
+
+    - Run the following command:
+       >> bazel run //Microservices/PodinfoFrontendApp/src:gazelle \                                                    
+        -- update-repos -from_file=Microservices/PodinfoFrontendApp/src/go.mod \
+        -to_macro=deps.bzl%go_dependencies
+
+    - A BUILD.bazel file will be created in all the relevant directories
+    - A deps.bazel will be created next to WORKSPACE.bazel
+
+    - Run >> bazel query '...' to the list of all the new targets
+
+<<<
+
+[5.1]. When you see the following message as part of error messages: :
+
+======
+Not a regular file: /Users/vijaykancherla/Downloads/DevOps-Projects/Monorepo-X-Bazel/WORKSPACE
+======
+
+=====
+ERROR: /Users/vijaykancherla/Downloads/DevOps-Projects/Monorepo-X-Bazel/Microservices/PodinfoFrontendApp/src/pkg/api/BUILD.bazel:3:11: 
+no such package '@io_opentelemetry_go_contrib_propagators_aws//xray': 
+no such package '@bazel_gazelle_go_repository_config//': Not a regular file: /Users/vijaykancherla/Downloads/DevOps-Projects/Monorepo-X-Bazel/WORKSPACE 
+and referenced by '//Microservices/PodinfoFrontendApp/src/pkg/api:api'
+=====
+
+Then, ensure that the "WORKSPACE" file is called JUST "WORKSPACE" and not "WORKSPACE.bazel"
+Gazelle needs the WORKSPACE file to be named just "WORKSPACE".
+To use "WORKSPACE.bazel" as the name, add the following to "WORKSPACE.bazel":
+    - gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
+
+<<<<
+
+
+[6]. If you see an error like this:
+
+=======
+ERROR: /private/var/tmp/_bazel_vijaykancherla/f970908e5d6b57a7ae94c7cac5cec9b4/external/com_github_grpc_ecosystem_grpc_gateway_v2/runtime/BUILD.bazel:5:11:
+error loading package '@go_googleapis//google/api': 
+at /private/var/tmp/_bazel_vijaykancherla/f970908e5d6b57a7ae94c7cac5cec9b4/external/com_google_googleapis_imports/imports.bzl:2:6: 
+Unable to find package for @com_github_grpc_grpc//bazel:cc_grpc_library.bzl: 
+The repository '@com_github_grpc_grpc' could not be resolved:
+Repository '@com_github_grpc_grpc' is not defined. and referenced by '@com_github_grpc_ecosystem_grpc_gateway_v2//runtime:runtime'
+=======
+
+It means a dependency with the name "com_github_grpc_grpc" is missing.
+
+Add the following to deps.bzl
+====
+go_repository(
+        name = "com_github_grpc_grpc",
+        importpath = "github.com/grpc/grpc",
+        sum = "h1:ERzVAJ0NoRduGwvmgxBBHbt7GdowD3m0WrpvPUnx/pM=",
+        version = "v1.59.0",
+    )
+====
+
+
+[7]. If you see an error like this:
+======
+ERROR: /private/var/tmp/_bazel_vijaykancherla/f970908e5d6b57a7ae94c7cac5cec9b4/external/com_github_grpc_ecosystem_grpc_gateway_v2/runtime/BUILD.bazel:5:11: 
+no such package '@go_googleapis//google/api': 
+The repository '@go_googleapis' could not be resolved: 
+Repository '@go_googleapis' is not defined and referenced by '@com_github_grpc_ecosystem_grpc_gateway_v2//runtime:runtime'
+======
+
+It means a dependency with name "go_googleapis" is missing.
+
+Add the following to WORKSPACE.bazel
+====
+http_archive(
+    name = "go_googleapis",
+    urls = ["https://github.com/googleapis/googleapis/archive/4d27ae79c480f0de8e88aae02c53ee7fb9fc03f5.tar.gz"],
+    strip_prefix = "googleapis-4d27ae79c480f0de8e88aae02c53ee7fb9fc03f5",
+)
+====

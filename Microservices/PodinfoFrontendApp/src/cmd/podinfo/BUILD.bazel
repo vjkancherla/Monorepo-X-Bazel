@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "podinfo_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/stefanprodan/podinfo/cmd/podinfo",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//Microservices/PodinfoFrontendApp/src/pkg/api",
+        "//Microservices/PodinfoFrontendApp/src/pkg/grpc",
+        "//Microservices/PodinfoFrontendApp/src/pkg/signals",
+        "//Microservices/PodinfoFrontendApp/src/pkg/version",
+        "@com_github_spf13_pflag//:go_default_library",
+        "@com_github_spf13_viper//:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+        "@org_uber_go_zap//zapcore:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "podinfo",
+    embed = [":podinfo_lib"],
+    visibility = ["//visibility:public"],
+)

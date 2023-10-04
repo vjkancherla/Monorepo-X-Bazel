@@ -21,3 +21,29 @@ BAZEL COMMANDS
 >> bazel run //Microservices/TEST/src/web:test_py_web_binary
     in another window, run >> curl http://localhost:5000
 
+
+>> bazel query "..."
+//Microservices/PodinfoFrontendApp/src:gazelle
+//Microservices/PodinfoFrontendApp/src:gazelle-runner
+//Microservices/PodinfoFrontendApp/src/cmd/podcli:podcli
+//Microservices/PodinfoFrontendApp/src/cmd/podcli:podcli_lib
+//Microservices/PodinfoFrontendApp/src/cmd/podinfo:podinfo
+//Microservices/PodinfoFrontendApp/src/cmd/podinfo:podinfo_lib
+//Microservices/PodinfoFrontendApp/src/pkg/api:api
+//Microservices/PodinfoFrontendApp/src/pkg/api:api_test
+//Microservices/PodinfoFrontendApp/src/pkg/api/docs:docs
+//Microservices/PodinfoFrontendApp/src/pkg/fscache:fscache
+//Microservices/PodinfoFrontendApp/src/pkg/grpc:grpc
+//Microservices/PodinfoFrontendApp/src/pkg/signals:signals
+//Microservices/PodinfoFrontendApp/src/pkg/version:version
+//Microservices/PythonApp/src/app:the_pythonapp_binary
+//Microservices/PythonApp/src/app:the_pythonapp_library
+//Microservices/PythonApp/src/tests:the_pythonapp_test
+//Microservices/TEST/src/tests:test_py
+//Microservices/TEST/src/tools:test_py_tools_library
+//Microservices/TEST/src/web:test_py_web_binary
+//Microservices/TEST/src/web:test_py_web_library
+
+>> bazel build //Microservices/PodinfoFrontendApp/src/pkg/api:api
+
+>> bazel run //Microservices/PodinfoFrontendApp/src/pkg/api:api_test

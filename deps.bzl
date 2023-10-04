@@ -1714,6 +1714,13 @@ def go_dependencies():
         sum = "h1:KpwkzHKEF7B9Zxg18WzOa7djJ+Ha5DzthMyZYQfEn2A=",
         version = "v0.0.0-20230410155749-daa745c078e1",
     )
+
+    go_repository(
+        name = "org_golang_google_genproto_googleapis_api",
+        importpath = "google.golang.org/genproto/googleapis/api",
+        sum = "h1:W18sezcAYs+3tDZX4F80yctqa12jcP1PUS2gQu1zTPU=",
+        version = "v0.0.0-20231002182017-d307bd883b97",
+    )
     go_repository(
         name = "org_golang_google_grpc",
         importpath = "google.golang.org/grpc",

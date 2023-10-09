@@ -21,5 +21,6 @@ go_library(
 go_binary(
     name = "podinfo",
     embed = [":podinfo_lib"],
+    data = ["//Microservices/PodinfoFrontendApp/src/ui"],
     visibility = ["//visibility:public"],
 )

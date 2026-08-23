@@ -1,27 +1,38 @@
-# Monorepo-X (Bazel)
+# Monorepo-X with Bazel
 
-A **Bazel** monorepo demonstrating a CI/CD service platform with a Jenkins shared
-library, SonarQube, and k3d-based core services.
+A monorepo build example using **Bazel**, demonstrating how to structure multiple
+packages (core services and microservices) under a single build graph.
 
 ## What's inside
 
-- `BUILD.bazel` — the top-level Bazel build definition.
-- `Core-Services/` — shared services:
-  - `Jenkins/` — Jenkins with a shared library (`JenkinsSharedLibrary`) exposing
-    build, test, lint, image publish, and Helm dry/wet-run steps, plus pipeline
-    variables (`continuousIntegration*.groovy`, `continuousDelivery.groovy`).
-  - `Sonarqube/` — SonarQube on Docker.
-  - `start-core-services.sh`, `stop-core-services.sh` — lifecycle scripts.
-- `JenkinsFile.CI` — the CI pipeline.
-- `.bazelversion`, `Bazel-Commands.txt`, `Bazel-Notes.txt` — Bazel version and references.
+- `WORKSPACE.bazel` — the Bazel workspace definition.
+- `BUILD.bazel` — root build file (kept empty, per Bazel conventions).
+- `deps.bzl` — external dependency declarations.
+- `Core-Services/` and `Microservices/` — the individual packages.
+- `Jenkinsfile`, `JenkinsFile.CI` — CI pipeline that drives the Bazel build.
+- `Bazel-Notes.txt`, `Bazel-Commands.txt` — notes and command reference.
+- `bazel/`, `bazel-bin/`, `bazel-out/`, `bazel-testlogs/` — Bazel output caches.
+
+## What you'll learn
+
+- Organizing a monorepo into Bazel packages.
+- Declaring dependencies and build targets.
+- Building a monorepo from CI with Bazel.
 
 ## Tools covered
 
-- Bazel (monorepo build system)
-- Jenkins shared libraries and pipelines
-- SonarQube, k3d
+- Bazel (WORKSPACE, BUILD files, packages)
+- Jenkins (CI)
 
 ## How to use
 
-Use `BUILD.bazel` and the `Core-Services/` Jenkins shared library as reference
-implementations for a Bazel-based monorepo CI/CD setup.
+Read `Bazel-Notes.txt` for the rules (e.g. keep the root `BUILD.bazel` empty),
+then run builds with:
+
+```bash
+bazel build //...
+```
+
+## Related
+
+- Bazel docs: https://bazel.build/docs
